@@ -19,7 +19,7 @@ Vertex and fragment shaders are typically used together in pairs, as a *shader p
 
 **Include a description in your A4.html web page describing what shaders you chose to implement, and any details about how you chose to implement them!**
 
-1. *Texture Generation (fragment shader)*
+1. **Texture Generation (fragment shader)**
 
    Modify the fragment shader to generate a texture on the fly (i.e., do not pass in a texture), from one of the following options:
 	
@@ -47,7 +47,7 @@ Vertex and fragment shaders are typically used together in pairs, as a *shader p
 
     ![Julia](https://github.gatech.edu/pages/cs3451f15/a4/img/julia-z6.png)
 	
-2. *Transparency (fragment shader)*
+2. **Transparency (fragment shader)**
 
 	Modify the fragment shader to do something interesting with transparency, from one of the following options:
 
@@ -59,7 +59,7 @@ Vertex and fragment shaders are typically used together in pairs, as a *shader p
 	
 	Make the plane transparent where the light is brightest. Make the size of the transparent hole "pulse" by changing its size as a smooth function of time (i.e., make the brightness threshold a function of time).
 	
-3. *Image Manipulation (fragment shader)*
+3. **Image Manipulation (fragment shader)**
 
 	Modify the fragment shader to accept two image textures and do some form of image manipulation to blend two image textures, picking from one of the following options:
 
@@ -89,7 +89,7 @@ Vertex and fragment shaders are typically used together in pairs, as a *shader p
 	You should have a small window around the threshold value through which blending occurs (e.g., if the threshold is .5, and the window is .1 wide, 
 	then values below .45 are from one image, values above .55 are from the other, and values from .45 to .55 smoothly blend from one image to the other.
 	 	
-4. *Vertex Shader*
+4. **Vertex Shader**
 
 	Modify the vertex shader to deform the objects, from one of the following options. **For this part of the assignment you are additionally required to sub-divide the quad into a grid of smaller quads**, otherwise the vertex shader won't have enough vertices to play with.
 	
