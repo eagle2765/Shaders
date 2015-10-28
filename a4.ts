@@ -164,7 +164,8 @@ function initWebGL() {
   // of our program, the "main" routing
   // 
   // YOU SHOULD MODIFY THIS TO DOWNLOAD ALL YOUR SHADERS and set up all four SHADER PROGRAMS,
-  // THEN PASS AN ARRAY OF PROGRAMS TO main()
+  // THEN PASS AN ARRAY OF PROGRAMS TO main().  You'll have to do other things in main to deal
+  // with multiple shaders and switch between them
   loader.loadFiles(['shaders/a3-shader.vert', 'shaders/a3-shader.frag'], function (shaderText) {
     var program = createProgramFromSources(gl, shaderText);
     main(gl, program);
@@ -185,9 +186,6 @@ function main(gl: WebGLRenderingContext, program: WebGLProgram) {
   var uniformSetters = createUniformSetters(gl, program);
   var attribSetters  = createAttributeSetters(gl, program);
 
-  /// ***************
-  /// This code creates the initial plane 
-
   // an indexed quad
   var arrays = {
      position: { numComponents: 3, data: [0, 0, 0, 10, 0, 0, 0, 10, 0, 10, 10, 0], },
@@ -199,9 +197,6 @@ function main(gl: WebGLRenderingContext, program: WebGLProgram) {
   var scaleFactor = 20;
   
   var bufferInfo = createBufferInfoFromArrays(gl, arrays);
-    
-  /// you will need to set up your arrays and then create your buffers
-  /// ********************
   
   function degToRad(d) {
     return d * Math.PI / 180;
@@ -224,17 +219,13 @@ function main(gl: WebGLRenderingContext, program: WebGLProgram) {
     u_worldInverseTranspose: mat4.create(),
   };
 
-  // var textures = [
-  //   textureUtils.makeStripeTexture(gl, { color1: "#FFF", color2: "#CCC", }),
-  //   textureUtils.makeCheckerTexture(gl, { color1: "#FFF", color2: "#CCC", }),
-  //   textureUtils.makeCircleTexture(gl, { color1: "#FFF", color2: "#CCC", }),
-  // ];
+  // var texture = .... create a texture of some form
 
   var baseColor = rand(240);
   var objectState = { 
       materialUniforms: {
         u_colorMult:             chroma.hsv(rand(baseColor, baseColor + 120), 0.5, 1).gl(),
-        //u_diffuse:               textures[randInt(textures.length)],
+        //u_diffuse:               texture,
         u_specular:              [1, 1, 1, 1],
         u_shininess:             450,
         u_specularFactor:        0.75,
@@ -282,8 +273,7 @@ function main(gl: WebGLRenderingContext, program: WebGLProgram) {
     // Make a view matrix from the camera matrix.
     mat4.invert(viewMatrix, cameraMatrix);
     
-    // tell WebGL to use our shader program.  probably don't need to do this each time, since we aren't
-    // changing it, but it doesn't hurt in this simple example.
+    // tell WebGL to use our shader program (will need to change this)
     gl.useProgram(program);
     
     // Setup all the needed attributes and buffers.  
@@ -303,7 +293,8 @@ function main(gl: WebGLRenderingContext, program: WebGLProgram) {
     // adjust the rotation based on mouse activity.  mouseAngles is set if user is dragging 
     if (mouseAngles[0] !== 0 || mouseAngles[1] !== 0) {
       /*
-       * only rotate around Y, use the second mouse value for scale
+       * only rotate around Y, use the second mouse value for scale.  Leaving the old code from A3 
+       * here, commented out
        * 
       // need an inverse world transform so we can find out what the world X axis for our first rotation is
       mat4.invert(invMatrix, matrix);
