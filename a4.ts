@@ -46,18 +46,22 @@ var randInt = function(range) {
 // get some of our canvas elements that we need
 var canvas = <HTMLCanvasElement>document.getElementById("webgl");  
 
+var globalshader = 0;
 window["onEffect1"] = () => {
     console.log("install effect1!");
+    globalshader = 0;
     
   //////////////
   ///////// YOUR CODE HERE TO cause the program to use your first shader effect
   ///////// (you can probably just use some sort of global variable to indicate which effect)
   //////////////
+    
+    
 } 
 
 window["onEffect2"] = () => {
     console.log("install effect2!");
-    
+    globalshader = 1;
   //////////////
   ///////// YOUR CODE HERE TO cause the program to use your second shader effect
   ///////// (you can probably just use some sort of global variable to indicate which effect)
@@ -66,7 +70,7 @@ window["onEffect2"] = () => {
 
 window["onEffect3"] = () => {
     console.log("install effect3!");
-    
+    globalshader = 2;
   //////////////
   ///////// YOUR CODE HERE TO cause the program to use your third shader effect
   ///////// (you can probably just use some sort of global variable to indicate which effect)
@@ -75,7 +79,7 @@ window["onEffect3"] = () => {
 
 window["onEffect4"] = () => {
     console.log("install effect4!");
-    
+    globalshader = 3;
   //////////////
   ///////// YOUR CODE HERE TO cause the program to use your fourth shader effect
   ///////// (you can probably just use some sort of global variable to indicate which effect)
@@ -166,9 +170,26 @@ function initWebGL() {
   // YOU SHOULD MODIFY THIS TO DOWNLOAD ALL YOUR SHADERS and set up all four SHADER PROGRAMS,
   // THEN PASS AN ARRAY OF PROGRAMS TO main().  You'll have to do other things in main to deal
   // with multiple shaders and switch between them
-  loader.loadFiles(['shaders/a3-shader.vert', 'shaders/a3-shader.frag'], function (shaderText) {
-    var program = createProgramFromSources(gl, shaderText);
-    main(gl, program);
+  loader.loadFiles(['shaders/a3-shader0.vert', 'shaders/a3-shader0.frag','shaders/a3-shader1.vert', 'shaders/a3-shader1.frag', 'shaders/a3-shader2.vert', 'shaders/a3-shader2.frag', 'shaders/a3-shader3.vert', 'shaders/a3-shader3.frag'], function (shaderText) {
+    var shaderText0 = [shaderText[0], shaderText[1]];
+    
+    var shaderText1 = [shaderText[2], shaderText[3]];
+    
+    var shaderText2 = [];
+    shaderText2.push(shaderText[4]);
+    shaderText2.push(shaderText[5]);
+    
+    var shaderText3 = [];
+    shaderText3.push(shaderText[6]);
+    shaderText3.push(shaderText[7]);
+    
+    var program0 = createProgramFromSources(gl, shaderText0);
+    var program1 = createProgramFromSources(gl, shaderText1);
+    var program2 = createProgramFromSources(gl, shaderText2);
+    var program3 = createProgramFromSources(gl, shaderText3);
+    
+    var programs = [program0, program1, program2, program3];
+    main(gl, programs);
   }, function (url) {
       alert('Shader failed to download "' + url + '"');
   }); 
@@ -176,22 +197,90 @@ function initWebGL() {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // webGL is set up, and our Shader program has been created.  Finish setting up our webGL application       
-function main(gl: WebGLRenderingContext, program: WebGLProgram) {
+function main(gl: WebGLRenderingContext, programs: WebGLProgram[]) {
   
   // use the webgl-utils library to create setters for all the uniforms and attributes in our shaders.
   // It enumerates all of the uniforms and attributes in the program, and creates utility functions to 
   // allow "setUniforms" and "setAttributes" (below) to set the shader variables from a javascript object. 
   // The objects have a key for each uniform or attribute, and a value containing the parameters for the
   // setter function
-  var uniformSetters = createUniformSetters(gl, program);
-  var attribSetters  = createAttributeSetters(gl, program);
+  
+  // z is number of squares
+  function createPositionArray(z) {
+    var anArray = [];
+    var a = Math.sqrt(z);
+    var increment = 10 / a;
+
+    // rows first
+    for (var y = 0; y <= 10; y = y + increment) {
+      for (var x = 0; x <= 10; x = x + increment) {
+          anArray.push(x);
+          anArray.push(y);
+          anArray.push(0);
+      }
+    }
+
+    return anArray;
+  }
+
+  // posArray is position array
+  function createTexArray(posArray) {
+    var anArray = [];
+    for (var i = 0; i < posArray.length; i = i + 3) {
+      anArray.push(posArray[i] / 10);
+      anArray.push(posArray[i + 1] / 10);
+    }
+    return anArray;
+  }
+
+  function createNormalArray(posArray) {
+    var anArray = [];
+    for (var i = 0; i < posArray.length / 3; i = i + 1) {
+      anArray.push(0);
+      anArray.push(0);
+      anArray.push(-1);
+    }
+    return anArray;
+  }
+
+  // z is the number of squares
+  function createIndiciesArray(z) {
+    var anArray = [];
+    var offset = Math.sqrt(z) + 1;
+    // vertex number
+    var current = offset;
+
+    // do for every vertex
+    for (; current < (offset * offset); current++) {
+
+      // add triangles to the array by square
+      if ((current + 1) % offset != 0) {
+        //triangle 1
+        anArray.push(current);
+        anArray.push(current - offset);
+        anArray.push(current - offset + 1);
+
+        //triangle 2
+        anArray.push(current);
+        anArray.push(current + 1);
+        anArray.push(current - offset + 1);
+      }
+    }
+    return anArray;
+  }
+
+  var positionArray = createPositionArray(64);
+  var texcoordArray = createTexArray(positionArray);
+  var normalArray = createNormalArray(positionArray);
+  var indiciesArray = createIndiciesArray(64);
+
 
   // an indexed quad
   var arrays = {
-     position: { numComponents: 3, data: [0, 0, 0, 10, 0, 0, 0, 10, 0, 10, 10, 0], },
-     texcoord: { numComponents: 2, data: [0, 0, 1, 0, 0, 1, 1, 1],                 },
-     normal:   { numComponents: 3, data: [0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1], },
-     indices:  { numComponents: 3, data: [0, 1, 2, 1, 3, 2],                       },
+     position: { numComponents: 3, data: positionArray,                 },
+     texcoord: { numComponents: 2, data: texcoordArray,                 },
+     normal:   { numComponents: 3, data: normalArray,                   },
+     indices:  { numComponents: 3, data: indiciesArray,                 },
   };
   var center = [5,5,0];
   var scaleFactor = 20;
@@ -219,7 +308,37 @@ function main(gl: WebGLRenderingContext, program: WebGLProgram) {
     u_worldInverseTranspose: mat4.create(),
   };
 
-  // var texture = .... create a texture of some form
+
+  var texture1 = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture1);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+      new Uint8Array([0, 0, 255, 255]));
+  // Asynchronously load an image
+  var image1 = new Image();
+  image1.src = "imgs/pic1.jpg";
+  image1.addEventListener('load', function() {
+  // Now that the image has loaded make copy it to the texture.
+  gl.bindTexture(gl.TEXTURE_2D, texture1);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image1);
+  gl.generateMipmap(gl.TEXTURE_2D);
+  });
+  
+
+  var texture2 = gl.createTexture();
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, texture2);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+      new Uint8Array([0, 0, 255, 255]));
+  // Asynchronously load an image
+  var image2 = new Image();
+  image2.src = "imgs/pic2.jpg";
+  image2.addEventListener('load', function() {
+  //Now that the image has loaded make copy it to the texture.
+  gl.bindTexture(gl.TEXTURE_2D, texture2);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image2);
+  gl.generateMipmap(gl.TEXTURE_2D);
+  });
+
 
   var baseColor = rand(240);
   var objectState = { 
@@ -244,6 +363,9 @@ function main(gl: WebGLRenderingContext, program: WebGLProgram) {
 
   // Draw the scene.
   function drawScene(time: number) {
+    //picks shader based on button. Starts with mandelbrot
+    var uniformSetters = createUniformSetters(gl, programs[globalshader]);
+    var attribSetters  = createAttributeSetters(gl, programs[globalshader]);
     time *= 0.001; 
    
     // measure time taken for the little stats meter
@@ -272,10 +394,42 @@ function main(gl: WebGLRenderingContext, program: WebGLProgram) {
 
     // Make a view matrix from the camera matrix.
     mat4.invert(viewMatrix, cameraMatrix);
-    
+
+        
     // tell WebGL to use our shader program (will need to change this)
-    gl.useProgram(program);
+    gl.useProgram(programs[globalshader]);
     
+
+    // pass variables into the shaders
+    if (globalshader == 2) {
+      var u_image0Location = gl.getUniformLocation(programs[globalshader], "u_image0");
+      var u_image1Location = gl.getUniformLocation(programs[globalshader], "u_image1");
+      var u_mouse_y = gl.getUniformLocation(programs[globalshader], "mouse_y");
+
+      //create texture units
+      gl.uniform1i(u_image0Location, 0);  // texture unit 0
+      gl.uniform1i(u_image1Location, 1);  // texture unit 1
+
+      // when the mouse moves give the shader the new mouse y position
+      document.onmousemove = function(e) {
+      gl.uniform1f(u_mouse_y, e.clientY - canvas.getBoundingClientRect().top);
+      };
+    }
+
+    if (globalshader == 3) {
+      // pass in time
+      var atime = gl.getUniformLocation(programs[globalshader], "a_time");
+      gl.uniform1f(u_mouse_y, time);
+      
+      // pass in mouse y
+      var u_mouse_y = gl.getUniformLocation(programs[globalshader], "mouse_y");
+      //when the mouse moves give the shader the new mouse y position
+      document.onmousemove = function(e) {
+      gl.uniform1f(u_mouse_y, e.clientY - canvas.getBoundingClientRect().top);
+      };
+    }
+    
+
     // Setup all the needed attributes and buffers.  
     setBuffersAndAttributes(gl, attribSetters, bufferInfo);
 

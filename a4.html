@@ -27,5 +27,14 @@ Shaders, shaders everywhere!
 
 <script data-main="js/a4" type="text/javascript" src="resources/require.js"></script>
 
+<h> Description </h>
+<p> 1. Texture Generation (fragment shader) <br> I created a Mandelbrot Set. The colors chosen depended on what iteration of the formula the fragment escaped. Basically, the escaped colors contained the most colors in this order: blue > green > red.
+
+<p>2. Transparency (fragment shader) <br> I created random circle centers and their radii using a python interpreter, then hardcoding it into the fragment shader by putting them into one array. Then, I looped through every circle and if the pixel was inside the circle (using a formula), I would discard it.</p>
+
+<p>3. Image Manipulation (fragment shader) <br> For Image Manipulation, I implemented brightness based blending. I took two pictures, and blended them based on the mouse's y position and an arbitrary window size. The blending formula includes the lightness computed from the rainbow colored image. Refresh the page if you have any issues.
+
+<p>4. Vertex Shader <br> I implemented warble by making the verticies move when the mouse's y position changed. I also used a sin function to make my polygons warble in the Y direction.
+
 </body>
 </html>

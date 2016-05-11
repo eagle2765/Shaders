@@ -149,3 +149,9 @@ You can probably implement the whole assignment wihtout adding any more .ts file
 1. cd into the directory and run ```npm install``` and ```tsd install```
 2. compile and start the server with ```gulp watch```
 3. open and view the web page ```localhost:8080/a4.html```
+
+
+
+## My Result
+
+![result](example.gif)
